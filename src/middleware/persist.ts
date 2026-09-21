@@ -228,8 +228,8 @@ const persistImpl: PersistImpl = (config, baseOptions) => (set, get, api) => {
 
   const savedSetState = api.setState
 
-  api.setState = (state, replace) => {
-    savedSetState(state, replace as any)
+  api.setState = (state, replace, ...args: any[]) => {
+    ;(savedSetState as (...args: any[]) => void)(state, replace, ...args)
     return setItem()
   }
 
