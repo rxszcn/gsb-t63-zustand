@@ -174,8 +174,11 @@ const geckoStackLineRe = /^([^@]+)@/
 function findCallerName(stack: string | undefined) {
   if (!stack) return undefined
   const traceLines = stack.split('\n')
-  const apiSetStateLineIndex = traceLines.findIndex((traceLine) =>
-    traceLine.includes('api.setState'),
+  // Middlewares wrapping `setState` (e.g. persist, immer) add their own
+  // frames to the stack, so the caller is the first frame after the last
+  // middleware frame rather than the frame after the first one.
+  const apiSetStateLineIndex = traceLines.findLastIndex((traceLine) =>
+    /(?:api|store)\.setState/.test(traceLine),
   )
   if (apiSetStateLineIndex < 0) return undefined
   const callerLine = traceLines[apiSetStateLineIndex + 1]?.trim() || ''
